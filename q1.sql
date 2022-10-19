@@ -35,7 +35,7 @@ HAVING COUNT(iso2)>1
 SELECT * FROM bo.dict_country WHERE iso2 = 'ID' 
 
 
--- -- JOIN country and client table to locate all clients registered in ID
+-- -- JOIN country and client table to locate all clients registered in Indonesia,ID
 -- -- METHOD 1
 SELECT loginid
 	, CONCAT(first_name, ' ', last_name) AS name
