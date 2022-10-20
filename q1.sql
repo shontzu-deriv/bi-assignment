@@ -1,6 +1,6 @@
 -- Identify values that are outliers, errors and invalid. 
 -- Eliminate or fix them and explain the logic of your data cleaning. [0.5 - 1 hour]
---Hint: Check the affiliate table and do a duplicate check iso2 column in dict_country table and check if there are missing values for countries by joining with affiliate and client table. The output expected is a list of rows that exist in any of the tables provided and some written explanation
+-- Hint: Check the affiliate table and do a duplicate check iso2 column in dict_country table and check if there are missing values for countries by joining with affiliate and client table. The output expected is a list of rows that exist in any of the tables provided and some written explanation
 
 -- -- STEP 1: EXAMINE TABLE
 SELECT * FROM bo.dict_country LIMIT 5;
@@ -35,7 +35,7 @@ HAVING COUNT(iso2)>1
 SELECT * FROM bo.dict_country WHERE iso2 = 'ID' 
 
 
--- -- JOIN country and client table to locate all clients registered in Indonesia,ID
+-- -- STEP 4: JOIN country and client table to locate all clients registered in Indonesia,ID
 -- -- METHOD 1
 SELECT loginid
 	, CONCAT(first_name, ' ', last_name) AS name
@@ -52,12 +52,21 @@ HAVING COUNT(iso2)>1
 
 -- -- METHOD 2
 SELECT loginid
-	, CONCAT(first_name, ' ', last_name) AS name
-	, UPPER(c.residence) AS residence
+	, CONCAT(c.first_name, ' ', c.last_name) AS name
+	, d.country
+	, d.geography_region
 	, d.iso3
 FROM bo.client AS c
 LEFT JOIN bo.dict_country AS d
 ON UPPER(c.residence) = d.iso2
 WHERE d.iso3 = 'NULL'
-GROUP BY loginid, first_name, last_name, c.residence, d.iso2, d.iso3
+GROUP BY loginid, first_name, last_name, c.residence, d.iso2, d.iso3, d.country, d.geography_region
 -- -- q1.3.png
+
+-- -- STEP 5: Find inconsistency
+-- -- bo.dict_country.iso2 = bo.client.residence  
+SELECT * FROM bo.dict_country WHERE iso2='RU' OR iso2='ru'
+-- -- q1.4.png
+SELECT * FROM bo.client WHERE residence='RU' OR residence='ru'
+-- -- q1.5.png
+
