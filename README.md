@@ -39,14 +39,10 @@ Hint: Check the affiliate table and do a duplicate check iso2 column in dict_cou
 
 ### #1: EXAMINE TABLES INDIVIDUALLY 
 ```
-SELECT * FROM bo.dict_country LIMIT 5;
-bo.dict_country
-country, geography_region, iso2, iso3
+SELECT * FROM bo.dict_country LIMIT 5
 ```
 ```
-SELECT * FROM bo.client WHERE residence='af' LIMIT 5;
-bo.client
-loginid, first_name, last_name, email, residence, date_joined, date_of_birth, source, currency_code, affiliate_id
+SELECT * FROM bo.client LIMIT 5
 ```
 <span style="font-size:small">([back to TOC](#toc))</span>
 
