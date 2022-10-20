@@ -41,9 +41,13 @@ Hint: Check the affiliate table and do a duplicate check iso2 column in dict_cou
 ```
 SELECT * FROM bo.dict_country LIMIT 5
 ```
+<a>![Foo](https://raw.githubusercontent.com/shontzu/bi-assignment/main/assets/bo.dict_country.png)</a>
+
 ```
 SELECT * FROM bo.client LIMIT 5
 ```
+<a>![Foo](https://raw.githubusercontent.com/shontzu/bi-assignment/main/assets/bo.client.png)</a>
+
 <span style="font-size:small">([back to TOC](#toc))</span>
 
 <div id="q1s2"></div>
@@ -55,6 +59,8 @@ LEFT JOIN bo.client AS c
 ON dc.iso2 = UPPER(c.residence)
 LIMIT 10;
 ```
+<a>![Foo](https://raw.githubusercontent.com/shontzu/bi-assignment/main/assets/q1_join1.png)</a>
+
 <span style="font-size:small">([back to TOC](#toc))</span>
 
 <div id="q1s3"></div>
@@ -66,6 +72,7 @@ FROM bo.client
 GROUP BY residence
 HAVING COUNT(residence)>1
 ```
+<a>![Foo](https://raw.githubusercontent.com/shontzu/bi-assignment/main/assets/duplicate_check1.png)</a>
 
 ```
 SELECT iso2, count(iso2)
@@ -73,6 +80,8 @@ FROM bo.dict_country
 GROUP BY iso2
 HAVING COUNT(iso2)>1
 ```
+<a>![Foo](https://raw.githubusercontent.com/shontzu/bi-assignment/main/assets/duplicate_check2.png)</a>
+
 <span style="font-size:small">([back to TOC](#toc))</span>
 
 <div id="q1s4"></div>
@@ -125,4 +134,5 @@ GROUP BY loginid, first_name, last_name, c.residence, d.iso2, d.iso3
 
 #### Capitalization inconsistency (RU and ru)
 <a>![q1.5.png](https://raw.githubusercontent.com/shontzu/bi-assignment/main/assets/q1.5.png)</a>
+
 <span style="font-size:small">([back to TOC](#toc))</span>
