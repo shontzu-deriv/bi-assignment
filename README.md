@@ -136,3 +136,154 @@ GROUP BY loginid, first_name, last_name, c.residence, d.iso2, d.iso3
 <a>![q1.5.png](https://raw.githubusercontent.com/shontzu/bi-assignment/main/assets/q1.5.png)</a>
 
 <span style="font-size:small">([back to TOC](#toc))</span>
+
+
+
+# Question 4
+### CORRELATION BETWEEN NUM OF AFFILIATES AND NUM OF CLIENTS
+```
+with
+
+new_affiliate as
+(
+	SELECT extract(YEAR from "date_joined")AS year
+		, COUNT(DISTINCT affiliate_id) AS new_affiliates
+		, affiliate_id
+	FROM bo.affiliate
+	GROUP BY year, affiliate_id
+	ORDER BY year ASC
+),
+
+new_client as
+(
+	SELECT extract(YEAR from "date_joined")AS year
+		, COUNT(DISTINCT loginid) AS new_clients
+		, affiliate_id
+	FROM bo.client
+	GROUP BY year, affiliate_id
+	ORDER BY year
+)
+
+SELECT a.year, SUM(new_affiliates) AS new_affiliates, SUM(new_clients) AS new_clients FROM new_affiliate as a
+LEFT JOIN new_client as c
+ON a.affiliate_id = c.affiliate_id
+GROUP BY 1
+ORDER BY 1
+```
+<a>![Foo](https://raw.githubusercontent.com/shontzu/bi-assignment/main/q4/affiliate_client_by_year.png)</a>
+
+### CORRELATION BETWEEN NUMBER OF AFFILIATES AND AVERAGE CONVERSION BY COUNTRY
+#### AVG CONVERSION
+```
+with conversion(affiliate_id) as  
+(
+	SELECT affiliate_id
+	, COUNT(loginid) AS num_of_clients
+	FROM bo.client 
+	GROUP BY affiliate_id
+),
+
+hit(affiliate_id) as  
+(
+	SELECT affiliate_id
+	, COUNT(date_hit) AS num_of_hits
+	FROM bo.affiliate_hit 
+	GROUP BY affiliate_id
+),
+
+country(affiliate_id) as
+(
+	SELECT affiliate_id, country
+	FROM bo.affiliate 
+),
+
+conversion_rate(affiliate_id) as
+(
+SELECT conversion.affiliate_id
+	, country
+	, hit.num_of_hits
+	, conversion.num_of_clients
+	, (100.0 * CAST(conversion.num_of_clients AS int)/CAST(hit.num_of_hits AS int)) AS conversion_rate
+	FROM conversion 
+LEFT JOIN hit
+ON conversion.affiliate_id = hit.affiliate_id
+LEFT JOIN country
+ON conversion.affiliate_id = country.affiliate_id
+GROUP BY conversion.affiliate_id, conversion.num_of_clients, hit.num_of_hits, country
+),
+
+affiliate_per_country(country) as
+(
+SELECT DISTINCT ON (country) 
+country, COUNT(*) As num_of_affiliates
+FROM conversion_rate
+GROUP BY country
+),
+
+conversion_per_country(country) as
+(
+SELECT DISTINCT ON (country) 
+country, AVG(conversion_rate) As avg_conversion
+FROM conversion_rate
+GROUP BY country
+)
+
+SELECT * FROM conversion_per_country WHERE avg_conversion<100
+```
+#### AFFILIATES PER COUNTRY
+```
+SELECT DISTINCT ON (country) 
+    country
+    , COUNT(*) As num_of_affiliates
+    , SUM(num_of_hits) AS num_of_hits
+    , SUM(num_of_clients) AS num_of_clients
+    , AVG(conversion_rate) AS avg_conversion_rate
+FROM conversion_rate
+GROUP BY country
+
+
+```
+<a>![Foo](https://raw.githubusercontent.com/shontzu/bi-assignment/main/q4/affiliate_vs_client_by_country.png)</a>
+
+### TREND OF CLIENT SIGNUP
+```
+ SELECT  DATE_TRUNC('month',date_joined) as signup_month
+       , COUNT(loginid) AS signup_clients
+   FROM bo.client
+  GROUP BY 1
+  ```
+<a>![Foo](https://raw.githubusercontent.com/shontzu/bi-assignment/main/q4/client_signup_monthly.png)</a>
+
+### NET PROFIT PER COUNTRY
+```
+with
+net as (
+	SELECT client_loginid
+		, COALESCE(SUM(amount_usd) FILTER(WHERE amount_usd>0),0) AS deposit
+		, COALESCE(SUM(amount_usd) FILTER(WHERE amount_usd<0),0) AS withdrawal
+		, COALESCE(SUM(amount_usd),0) AS net
+	FROM bo.payment GROUP BY client_loginid
+	ORDER BY net 
+),
+
+country as (
+	SELECT loginid, residence FROM bo.client
+)
+
+SELECT DISTINCT ON(residence) 
+	client_loginid
+	, residence 
+	, deposit
+	, withdrawal
+	, net
+	FROM net
+LEFT JOIN bo.client AS c
+ON net.client_loginid = c.loginid
+
+-- PSEUDOCODE:
+-- SUM Withdraw of each client
+-- SUM Deposit of each client
+-- SUM Deposit-Withdraw SORT ASC
+```
+<a>![Foo](https://raw.githubusercontent.com/shontzu/bi-assignment/main/q4/net_profit_by_country.png)</a>
+
